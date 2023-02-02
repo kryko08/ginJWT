@@ -1,24 +1,18 @@
 package db
 
 import (
+	"GoProject/utils"
 	"context"
 	"fmt"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
-	"os"
 	"time"
 )
 
 func ConnectDB() *mongo.Client {
-	// load .env variables
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
-	mongoUri := os.Getenv("MONGO_URI")
+	mongoUri := utils.GetOsEnv("MONGO_URI")
 
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	clientOptions := options.Client().
