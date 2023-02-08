@@ -3,14 +3,17 @@ package middleware
 import (
 	"GoProject/utils"
 	"github.com/golang-jwt/jwt/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
 )
 
 func TestGenerateJWT(t *testing.T) {
 	service := JWTService{}
 	service.setUpJWTService("test", *jwt.SigningMethodHS256)
-	token := service.generateJWT("1")
-	_, err := service.verifyJWT(token)
+	id := primitive.NewObjectID()
+	idS := id.Hex()
+	token := service.generateJWT(idS)
+	_, err := service.VerifyJWT(token)
 	if err != nil {
 		t.Fatal("Error parsing the token", err)
 	}
@@ -19,9 +22,11 @@ func TestGenerateJWT(t *testing.T) {
 func TestAlterToken(t *testing.T) {
 	service := JWTService{}
 	service.setUpJWTService("test", *jwt.SigningMethodHS256)
-	token := service.generateJWT("1")
+	id := primitive.NewObjectID()
+	idS := id.Hex()
+	token := service.generateJWT(idS)
 	alteredToken := utils.AlterToken(token)
-	_, err := service.verifyJWT(alteredToken)
+	_, err := service.VerifyJWT(alteredToken)
 	if err == nil {
 		t.Fatal("Expected error, Token altered")
 	}

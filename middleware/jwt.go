@@ -9,8 +9,8 @@ import (
 )
 
 type TokenGeneratorVerifier interface {
-	generateJWT(string) string
-	verifyJWT(string) (*jwt.Token, string)
+	generateJWT(string2 string) string
+	verifyJWT(string2 string) (*jwt.Token, string)
 }
 
 // JWTService Implements TokenGeneratorVerifier
@@ -52,7 +52,7 @@ func (s *JWTService) generateJWT(userId string) string {
 	return t
 }
 
-func (s *JWTService) verifyJWT(tokenString string) (*jwt.Token, error) {
+func (s *JWTService) VerifyJWT(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// validate alg
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
