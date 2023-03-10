@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"testing"
 )
@@ -15,7 +16,8 @@ func TestConnectDB(t *testing.T) {
 	filter := bson.D{}
 	count, err := collection.CountDocuments(context.TODO(), filter)
 
-	if count != 1 || err != nil {
+	if err != nil {
 		t.Fatalf("Connection failed")
 	}
+	assert.Equal(t, 1, int(count))
 }

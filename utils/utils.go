@@ -2,21 +2,28 @@ package utils
 
 import (
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
 	"strings"
 )
 
-func GetOsEnv(osEnv string) string {
-	err := godotenv.Load("../.env")
+type EnvStr struct {
+	MongoUri string
+	Key      string
+}
+
+var EnvVars = GetEnvVars("./.env")
+
+func GetEnvVars(relativeEnvPath string) *EnvStr {
+	err := godotenv.Load(relativeEnvPath)
 	if err != nil {
 		log.Fatal("Error while loading .env file", err)
 	}
-	secret := os.Getenv(osEnv)
-	if secret == "" {
-		log.Fatal("error loading a secret", secret)
+	return &EnvStr{
+		MongoUri: os.Getenv("MONGO_URI"),
+		Key:      os.Getenv("SECRET_KEY"),
 	}
-	return secret
 }
 
 func AlterToken(s string) string {
@@ -33,4 +40,14 @@ func reverseString(str string) string {
 		byteStr[i], byteStr[j] = byteStr[j], byteStr[i]
 	}
 	return string(byteStr)
+}
+
+func HashPassword(p string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(p), 14)
+	return string(bytes), err
+}
+
+func CheckPassword(p string, h string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(h), []byte(p))
+	return err == nil
 }

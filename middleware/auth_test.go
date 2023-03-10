@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"GoProject/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
@@ -12,11 +13,12 @@ import (
 )
 
 func TestExtractTokenString(t *testing.T) {
+	utils.LoadEnv("../.env")
 	s := JWTService{}
-	s.setUpJWTService("test", *jwt.SigningMethodHS256)
+	s.SetUpJWTService("test", *jwt.SigningMethodHS256)
 	id := primitive.NewObjectID()
 	idS := id.Hex()
-	token := s.generateJWT(idS)
+	token := s.GenerateJWT(idS)
 
 	req, err := http.NewRequest("GET", "www.example.com", nil)
 	if err != nil {
@@ -47,11 +49,11 @@ func TestExtractTokenStringEmpty(t *testing.T) {
 func TestExtractUserData(t *testing.T) {
 	// generate and verify token
 	s := JWTService{}
-	s.setUpJWTService("test", *jwt.SigningMethodHS256)
+	s.SetUpJWTService("test", *jwt.SigningMethodHS256)
 
 	id := primitive.NewObjectID()
 	idS := id.Hex()
-	tokenString := s.generateJWT(idS)
+	tokenString := s.GenerateJWT(idS)
 	token, err := s.VerifyJWT(tokenString)
 	if err != nil {
 		t.Fatal("error verifying token")
@@ -75,10 +77,10 @@ func TestExtractUserData(t *testing.T) {
 func TestJWTAuthorizationWithToken(t *testing.T) {
 	// create service and create JWT token
 	s := JWTService{}
-	s.setUpJWTService("test", *jwt.SigningMethodHS256)
+	s.SetUpJWTService("test", *jwt.SigningMethodHS256)
 	id := primitive.NewObjectID()
 	idS := id.Hex()
-	token := s.generateJWT(idS)
+	token := s.GenerateJWT(idS)
 
 	// setup router with middleware and handler
 	r := gin.Default()
@@ -104,5 +106,68 @@ func TestJWTAuthorizationWithToken(t *testing.T) {
 	// handlers write calls are sent to Body
 	responseCode := w.Code
 	assert.Equal(t, 200, responseCode, "wrong response code")
+}
 
+func TestJWTAuthorizationWithNoToken(t *testing.T) {
+	// create service and create JWT token
+	s := JWTService{}
+	s.SetUpJWTService("test", *jwt.SigningMethodHS256)
+
+	// setup router with middleware and handler
+	r := gin.Default()
+	r.GET("test/", JWTAuthorization(s), func(context *gin.Context) {
+		// Get header
+		resp, ok := context.Get("user_data")
+		if !ok {
+			t.Fatal("could not get value from context")
+		}
+		context.JSON(http.StatusOK, gin.H{"response": resp})
+	})
+
+	// create request
+	w := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(w)
+	req, err := http.NewRequestWithContext(ctx, "GET", "/test/", nil)
+	if err != nil {
+		t.Fatal("error creating request")
+	}
+	r.ServeHTTP(w, req)
+	// handlers write calls are sent to Body
+	responseCode := w.Code
+	assert.Equal(t, 401, responseCode, "wrong response code")
+}
+
+func TestJWTAuthorizationWithAlteredToken(t *testing.T) {
+	// create service and create JWT token
+	s := JWTService{}
+	s.SetUpJWTService("test", *jwt.SigningMethodHS256)
+	id := primitive.NewObjectID()
+	idS := id.Hex()
+	token := s.GenerateJWT(idS)
+	alteredToken := utils.AlterToken(token)
+
+	// setup router with middleware and handler
+	r := gin.Default()
+	r.GET("test/", JWTAuthorization(s), func(context *gin.Context) {
+		// Get header
+		resp, ok := context.Get("user_data")
+		if !ok {
+			t.Fatal("could not get value from context")
+		}
+		context.JSON(http.StatusOK, gin.H{"response": resp})
+	})
+
+	// create request
+	w := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(w)
+	req, err := http.NewRequestWithContext(ctx, "GET", "/test/", nil)
+	if err != nil {
+		t.Fatal("error creating request")
+	}
+	// put token into header
+	req.Header.Add("jwt", alteredToken)
+	r.ServeHTTP(w, req)
+	// handlers write calls are sent to Body
+	responseCode := w.Code
+	assert.Equal(t, 401, responseCode, "wrong response code")
 }

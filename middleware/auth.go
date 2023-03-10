@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -61,7 +60,6 @@ func JWTAuthorization(s JWTService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userData, err := ValidateRequest(ctx, &s)
 		if err != nil {
-			log.Print("TADY JE ERROR", err)
 			ctx.JSON(http.StatusUnauthorized, err)
 			ctx.Abort()
 			return

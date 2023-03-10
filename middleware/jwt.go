@@ -25,15 +25,15 @@ type customClaims struct {
 	jwt.RegisteredClaims
 }
 
-func (s *JWTService) setUpJWTService(issuer string, hmac jwt.SigningMethodHMAC) {
+func (s *JWTService) SetUpJWTService(issuer string, hmac jwt.SigningMethodHMAC) {
 	s.method = hmac
 	// get secret key
-	s.secret = utils.GetOsEnv("SECRET_KEY")
+	s.secret = utils.EnvVars.Key
 	// get issuer
 	s.issuer = issuer
 }
 
-func (s *JWTService) generateJWT(userId string) string {
+func (s *JWTService) GenerateJWT(userId string) string {
 	claims := customClaims{
 		userId,
 		jwt.RegisteredClaims{

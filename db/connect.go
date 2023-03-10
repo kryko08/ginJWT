@@ -12,8 +12,8 @@ import (
 )
 
 func ConnectDB() *mongo.Client {
-	mongoUri := utils.GetOsEnv("MONGO_URI")
-
+	// mongoUri, ok := os.LookupEnv("MONGO_URI")
+	mongoUri := utils.EnvVars.MongoUri
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	clientOptions := options.Client().
 		ApplyURI(mongoUri).
@@ -32,7 +32,7 @@ func ConnectDB() *mongo.Client {
 		log.Fatal("Error pinging the DB server")
 	}
 
-	fmt.Print("Database successfully connected")
+	fmt.Printf("Database successfully connected\n")
 	return client
 }
 
