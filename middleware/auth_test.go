@@ -13,7 +13,6 @@ import (
 )
 
 func TestExtractTokenString(t *testing.T) {
-	utils.LoadEnv("../.env")
 	s := JWTService{}
 	s.SetUpJWTService("test", *jwt.SigningMethodHS256)
 	id := primitive.NewObjectID()

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"time"
@@ -46,7 +47,9 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	newId := primitive.NewObjectID()
 	userToSave := models.User{
+		ID:       newId,
 		Username: newUser.Username,
 		Email:    newUser.Email,
 		Password: passwordHash,
@@ -57,7 +60,6 @@ func RegisterUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": errInsert.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"StatusOk": "User has been successfully added to database"})
 }
 
